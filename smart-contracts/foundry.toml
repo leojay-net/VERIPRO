@@ -1,0 +1,19 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+
+# Solidity compiler version
+solc_version = "0.8.20"
+
+# Optimizer settings
+optimizer = true
+optimizer_runs = 200
+
+# RPC endpoints
+[rpc_endpoints]
+mantle_sepolia = "https://rpc.sepolia.mantle.xyz"
+mantle_mainnet = "https://rpc.mantle.xyz"
+localhost = "http://127.0.0.1:8545"
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
