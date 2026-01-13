@@ -1,10 +1,9 @@
 use k256::ecdsa::{
-    signature::{hazmat::PrehashSigner, Signer},
-    Signature, SigningKey, VerifyingKey,
+    signature::hazmat::PrehashSigner,
+    RecoveryId, Signature, SigningKey, VerifyingKey,
 };
 use serde::{Deserialize, Serialize};
 use sha3::{Digest, Keccak256};
-// use k256::ecdsa::signature::Verifier;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VerificationResult {
@@ -35,7 +34,7 @@ pub struct VerificationAttestation {
     pub result_hash: String,      // keccak256(serde_json::to_string(VerificationResult))
     pub prover_address: String,   // 0x... address of the prover
     #[serde(with = "hex")]
-    pub signature: Vec<u8>, // Signature bytes
+    pub signature: Vec<u8>, // Signature bytes (65 bytes: r + s + v)
     pub payload: VerificationResult,
 }
 
@@ -53,10 +52,17 @@ impl VerificationAttestation {
 
         let hash_bytes = hex::decode(&result_hash)?;
 
-        // We sign the hash of the result directly (as a precomputed digest)
-        // This is compatible with Solidity ecrecover(hash, v, r, s)
-        let signature: Signature = signing_key.sign_prehash(&hash_bytes)?;
-        let signature_bytes = signature.to_vec();
+        // Sign with recovery id for Ethereum compatibility
+        let (signature, recovery_id) = signing_key
+            .sign_prehash_recoverable(&hash_bytes)
+            .map_err(|e| format!("Failed to sign: {}", e))?;
+
+        // Build 65-byte signature: r (32) + s (32) + v (1)
+        let mut signature_bytes = signature.to_vec(); // 64 bytes (r + s)
+        
+        // Add recovery id as v (27 or 28 for Ethereum)
+        let v = recovery_id.to_byte() + 27;
+        signature_bytes.push(v);
 
         // Derive address
         let derived_address = eth_address_from_pubkey(&verifying_key);
