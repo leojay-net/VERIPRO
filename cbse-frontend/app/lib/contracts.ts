@@ -53,14 +53,24 @@ export function parseSignature(signatureHex: string): { v: number; r: `0x${strin
         // Remove 0x prefix if present
         const sig = signatureHex.startsWith('0x') ? signatureHex.slice(2) : signatureHex;
 
-        if (sig.length !== 130) {
-            console.error('Invalid signature length:', sig.length);
+        // Handle both 64-byte (128 chars, no v) and 65-byte (130 chars, with v) signatures
+        if (sig.length !== 128 && sig.length !== 130) {
+            console.error('Invalid signature length:', sig.length, '(expected 128 or 130)');
             return null;
         }
 
         const r = `0x${sig.slice(0, 64)}` as `0x${string}`;
         const s = `0x${sig.slice(64, 128)}` as `0x${string}`;
-        let v = parseInt(sig.slice(128, 130), 16);
+        
+        let v: number;
+        if (sig.length === 130) {
+            // 65-byte signature includes v
+            v = parseInt(sig.slice(128, 130), 16);
+        } else {
+            // 64-byte signature - need to try both v values (27 and 28)
+            // Default to 27, the contract's ecrecover will validate
+            v = 27;
+        }
 
         // Handle EIP-155 signature format
         if (v < 27) {
