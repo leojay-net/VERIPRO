@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
       // In production without a real coordinator, don't rewrite (will 404)
       return [];
     }
-    
+
     return [
       {
         source: '/api/verify',
