@@ -569,7 +569,7 @@ export default function ProjectDetailPage() {
                                                         </div>
                                                         {attestationTxHash && (
                                                             <a
-                                                                href={`https://explorer.mantle.xyz/tx/${attestationTxHash}`}
+                                                                href={`https://sepolia.mantlescan.xyz/tx/${attestationTxHash}`}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="text-xs text-zinc-500 hover:text-zinc-300 mt-1 block truncate"

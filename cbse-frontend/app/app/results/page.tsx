@@ -251,7 +251,7 @@ export default function ResultsPage() {
                                         Attested On-Chain
                                     </div>
                                     <a
-                                        href={`https://explorer.mantle.xyz/tx/${selectedResult.onchainTxHash}`}
+                                        href={`https://sepolia.mantlescan.xyz/tx/${selectedResult.onchainTxHash}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-xs text-zinc-400 hover:text-zinc-300 font-mono break-all"
