@@ -101,7 +101,7 @@ function highlightSolidity(code: string): string {
 
 export default function SyntaxEditor({ value, onChange, placeholder, readOnly = false }: SyntaxEditorProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const highlightRef = useRef<HTMLDivElement>(null);
+    const highlightRef = useRef<HTMLPreElement>(null);
     const lineNumbersRef = useRef<HTMLDivElement>(null);
 
     // Sync scroll between textarea, highlight layer, and line numbers
@@ -145,6 +145,19 @@ export default function SyntaxEditor({ value, onChange, placeholder, readOnly = 
     const lines = value.split('\n');
     const lineCount = lines.length;
 
+    // Common text styles to ensure both layers render identically
+    const textStyles = {
+        fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+        fontSize: '14px',
+        lineHeight: '26px',
+        letterSpacing: 'normal',
+        wordSpacing: 'normal',
+        tabSize: 4,
+        whiteSpace: 'pre' as const,
+        overflowWrap: 'normal' as const,
+        wordBreak: 'normal' as const,
+    };
+
     return (
         <div className="relative w-full h-full flex bg-zinc-950">
             {/* Inline styles for syntax highlighting */}
@@ -157,6 +170,20 @@ export default function SyntaxEditor({ value, onChange, placeholder, readOnly = 
                 .sol-contract { color: #fde047; font-weight: 600; }
                 .sol-builtin { color: #22d3ee; }
                 .sol-number { color: #fb923c; }
+                
+                .syntax-editor-textarea,
+                .syntax-editor-highlight {
+                    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace !important;
+                    font-size: 14px !important;
+                    line-height: 26px !important;
+                    letter-spacing: normal !important;
+                    word-spacing: normal !important;
+                    tab-size: 4 !important;
+                    -moz-tab-size: 4 !important;
+                    white-space: pre !important;
+                    overflow-wrap: normal !important;
+                    word-break: normal !important;
+                }
             `}</style>
             
             {/* Line numbers */}
@@ -164,9 +191,12 @@ export default function SyntaxEditor({ value, onChange, placeholder, readOnly = 
                 ref={lineNumbersRef}
                 className="flex-shrink-0 bg-zinc-900/50 border-r border-zinc-800 select-none overflow-hidden"
             >
-                <div className="p-4 pr-3 font-mono text-sm leading-[1.625rem] text-right">
+                <div 
+                    className="p-4 pr-3 text-right"
+                    style={{ ...textStyles, color: '#52525b' }}
+                >
                     {Array.from({ length: Math.max(lineCount, 1) }, (_, i) => (
-                        <div key={i} className="text-zinc-600">
+                        <div key={i}>
                             {i + 1}
                         </div>
                     ))}
@@ -176,13 +206,13 @@ export default function SyntaxEditor({ value, onChange, placeholder, readOnly = 
             {/* Editor area */}
             <div className="relative flex-1 overflow-hidden">
                 {/* Syntax highlighted layer (background) */}
-                <div
+                <pre
                     ref={highlightRef}
-                    className="absolute inset-0 p-4 font-mono text-sm leading-[1.625rem] overflow-auto pointer-events-none whitespace-pre-wrap break-words text-zinc-300"
+                    className="syntax-editor-highlight absolute inset-0 p-4 m-0 overflow-auto pointer-events-none text-zinc-300"
+                    style={textStyles}
                     aria-hidden="true"
-                >
-                    <code dangerouslySetInnerHTML={{ __html: highlightSolidity(value) || '&nbsp;' }} />
-                </div>
+                    dangerouslySetInnerHTML={{ __html: highlightSolidity(value) || '\u00A0' }}
+                />
 
                 {/* Editable textarea (foreground, transparent text) */}
                 <textarea
@@ -194,8 +224,12 @@ export default function SyntaxEditor({ value, onChange, placeholder, readOnly = 
                     readOnly={readOnly}
                     spellCheck={false}
                     placeholder={placeholder}
-                    className="absolute inset-0 w-full h-full p-4 font-mono text-sm leading-[1.625rem] bg-transparent text-transparent caret-white resize-none focus:outline-none selection:bg-blue-500/30 placeholder-zinc-600"
-                    style={{ caretColor: 'white' }}
+                    className="syntax-editor-textarea absolute inset-0 w-full h-full p-4 m-0 bg-transparent text-transparent caret-white resize-none focus:outline-none selection:bg-blue-500/30 placeholder-zinc-600 border-0"
+                    style={{ 
+                        ...textStyles,
+                        caretColor: 'white',
+                        outline: 'none',
+                    }}
                 />
             </div>
         </div>
